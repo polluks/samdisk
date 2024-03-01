@@ -91,7 +91,7 @@ void ViewTrack_MFM_FM(Encoding encoding, BitBuffer& bitbuf)
     track_data.reserve(max_size);
     colours.reserve(max_size);
 
-    uint32_t dword = 0;
+    uint32_t dword = 0xffffffff;
     int bits = 0, a1 = 0, am_dist = 0xffff, data_size = 0;
     uint8_t am = 0;
     uint16_t sync_mask = opt.a1sync ? 0xffdf : 0xffff;
@@ -145,6 +145,9 @@ void ViewTrack_MFM_FM(Encoding encoding, BitBuffer& bitbuf)
                 // A1 sync byte (bright yellow if aligned to bitstream, dark yellow if not).
                 colours.push_back((bits == 16) ? colour::YELLOW : colour::yellow);
                 ++a1;
+
+                // Invalidate window contents to prevent early false sync match.
+                dword = 0xffff;
             }
             else
             {
