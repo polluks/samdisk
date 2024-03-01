@@ -425,8 +425,8 @@ bool ParseCommandLine(int argc_, char* argv_[])
             break;
         case OPT_BITSKIP:
             opt.bitskip = util::str_value<int>(optarg);
-            if (opt.bitskip < 0 || opt.bitskip > 15)
-                throw util::exception("invalid bit skip '", optarg, "', expected 0-15");
+            if (opt.bitskip < 0 || opt.bitskip > 31)
+                throw util::exception("invalid bit skip '", optarg, "', expected 0-31");
             break;
         case OPT_STEPRATE:
             opt.steprate = util::str_value<int>(optarg);
