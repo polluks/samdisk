@@ -149,7 +149,7 @@ struct option long_options[] =
     { "sectors",    required_argument, nullptr, 's' },
     { "hard-sectors",required_argument,nullptr, 'H' },
     { "retries",    required_argument, nullptr, 'r' },
-    { "rescans",    optional_argument, nullptr, 'R' },
+    { "rescans",    required_argument, nullptr, 'R' },
     { "double-step",      no_argument, nullptr, 'd' },
     { "verbose",          no_argument, nullptr, 'v' },
 
@@ -398,7 +398,7 @@ bool ParseCommandLine(int argc_, char* argv_[])
             opt.maxsplice = util::str_value<int>(optarg);
             break;
         case OPT_CHECK8K:
-            opt.check8k = !optarg ? 1 : util::str_value<int>(optarg);
+            opt.check8k = optarg ? util::str_value<int>(optarg) : 1;
             break;
         case OPT_RPM:
             opt.rpm = util::str_value<int>(optarg);
@@ -439,7 +439,7 @@ bool ParseCommandLine(int argc_, char* argv_[])
             break;
 
         case OPT_DEBUG:
-            opt.debug = util::str_value<int>(optarg);
+            opt.debug = optarg ? util::str_value<int>(optarg) : 1;
             if (opt.debug < 0)
                 throw util::exception("invalid debug level, expected >= 0");
             break;
