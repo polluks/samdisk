@@ -9,6 +9,7 @@
 
 #include "SAMdisk.h"
 #include "IBMPC.h"
+#include "DiskUtil.h"
 
 // ToDo: separate EDSK and DSK support, as EDSK alone is complicated enough!
 
@@ -347,12 +348,18 @@ bool ReadDSK(MemFile& file, std::shared_ptr<Disk>& disk)
                 }
             }
 
-            // Legacy EDSK images only store 6K data for 8K sectors, so any
-            // checksum bytes the disk may have had are lost.
+            // Legacy EDSK images store only 6K of data for 8K sectors (size code 6).
+            // This may miss some checksum bytes needed to verify the sector integrity,
+            // in the absence of the normal sector data CRC after the data field.
             if (!fWarned6K && track.is_8k_sector() && track[0].data_size() == 6144)
             {
-                Message(msgWarning, "missing checksums needed to verify 8K sector integrity");
-                fWarned6K = true;
+                const auto& data = track[0].datas().front();
+                auto chk8k_methods = ChecksumMethods(data.data(), data.size());
+                if (chk8k_methods.empty())
+                {
+                    Message(msgWarning, "missing checksums needed to verify 8K sector integrity");
+                    fWarned6K = true;
+                }
             }
 
             disk->write(cylhead, std::move(track));

@@ -48,6 +48,7 @@ enum class ChecksumType
     XOR_18A0,       // XOR of 0x18a0 bytes
     CRC_D2F6_1800,  // CRC-16 (init=D2F6) for 0x1800 bytes
     CRC_D2F6_1802,  // CRC-16 (init=D2F6) for 0x1802 bytes
+    CRC_92FD_1602,  // CRC-16 (init=92FD) for 0x1602 bytes
 };
 
 std::set<ChecksumType> ChecksumMethods(const uint8_t* buf, int len);

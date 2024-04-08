@@ -1084,10 +1084,6 @@ std::set<ChecksumType> ChecksumMethods(const uint8_t* buf, int len)
 {
     std::set<ChecksumType> methods;
 
-    // If there's not enough data, there can be no checksum. Return an empty set.
-    if (len <= 0x1800)
-        return methods;
-
     // 2-byte CRC
     {
         // Check for CRC of 8C 15, which seems to be a strange fixed checksum found on some disks.
@@ -1112,9 +1108,19 @@ std::set<ChecksumType> ChecksumMethods(const uint8_t* buf, int len)
             if (!crc)
                 methods.insert(ChecksumType::CRC_D2F6_1802);
         }
+
+        // Calculate the CRC-16 of the first 0x1602 bytes, using a custom CRC init of 92FD.
+        // This is known to be used by Terminator 2: Judgment Day (+3).
+        if (len >= 0x1602)
+        {
+            CRC16 crc(buf, 0x1600 + 2, 0x92fd); // include CRC bytes
+            if (!crc)
+                methods.insert(ChecksumType::CRC_92FD_1602);
+        }
     }
 
     // 1-byte checksum
+    if (len >= 0x1800)
     {
         // Sum the first 6K
         auto sum = static_cast<uint8_t>(std::accumulate(buf, buf + 0x1800, 0));
@@ -1139,7 +1145,7 @@ std::set<ChecksumType> ChecksumMethods(const uint8_t* buf, int len)
 
     // Check 6K of filler on unused tracks (Vigilante on CPC)
     // This is only done if we haven't yet matched another method.
-    if (methods.empty() && !memcmp(buf, buf + 1, 0x17ff))
+    if (methods.empty() && len >= 0x1800 && !memcmp(buf, buf + 1, 0x17ff))
         methods.insert(ChecksumType::None);
 
     return methods;
@@ -1165,6 +1171,7 @@ std::string ChecksumName(std::set<ChecksumType> methods)
         case ChecksumType::XOR_18A0:        ss << "XOR_18A0"; break;
         case ChecksumType::CRC_D2F6_1800:   ss << "CRC_D2F6"; break;
         case ChecksumType::CRC_D2F6_1802:   ss << "CRC_D2F6_1802"; break;
+        case ChecksumType::CRC_92FD_1602:   ss << "CRC_0000_1602"; break;
         }
     }
 
@@ -1189,8 +1196,9 @@ std::string ChecksumNameShort(std::set<ChecksumType> methods)
         case ChecksumType::Sum_1800:        ss << "sum"; break;
         case ChecksumType::XOR_1800:        ss << "xor"; break;
         case ChecksumType::XOR_18A0:        ss << "xorA0"; break;
-        case ChecksumType::CRC_D2F6_1800:   ss << "crc0"; break;
-        case ChecksumType::CRC_D2F6_1802:   ss << "crc2"; break;
+        case ChecksumType::CRC_D2F6_1800:   ss << "crc6k"; break;
+        case ChecksumType::CRC_D2F6_1802:   ss << "crc6k2"; break;
+        case ChecksumType::CRC_92FD_1602:   ss << "crc5k2"; break;
         }
     }
 
@@ -1210,6 +1218,7 @@ int ChecksumLength(ChecksumType method)
     case ChecksumType::Constant_8C15:
     case ChecksumType::CRC_D2F6_1800:
     case ChecksumType::CRC_D2F6_1802:
+    case ChecksumType::CRC_92FD_1602:
         return 2;
     }
 
