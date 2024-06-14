@@ -576,8 +576,8 @@ void scan_bitstream_gcr(TrackData& trackdata)
         }
 
         default:
-            // Only complain about bad address marks if we've already found a header.
-            if (!track.empty() || opt.encoding == Encoding::GCR)
+            // Only complain about bad address marks if we're explicitly scanning for GCR, to avoid false-positives.
+            if (opt.encoding == Encoding::GCR)
                 Message(msgWarning, "  s_b_gcr unknown AM (%02X) at offset %u on %s", am, am_offset, CH(trackdata.cylhead.cyl, trackdata.cylhead.head));
             break;
         }
