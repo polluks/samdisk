@@ -26,6 +26,7 @@ bool ReadBPB(MemFile& file, std::shared_ptr<Disk>& disk)
     fmt.sectors = static_cast<uint8_t>(sectors);
     fmt.size = SizeToCode(sector_size);
     fmt.gap3 = 0;   // auto
+    fmt.skew = opt.skew >= 0 ? opt.skew : fmt.skew;
     if (!fmt.TryValidate())
         return false;
 
