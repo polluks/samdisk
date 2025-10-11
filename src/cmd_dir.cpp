@@ -87,7 +87,8 @@ bool DirMgtEntry(int n_, const MGT_DIR* p_, bool fHidden_)
 
     auto sectors = (p_->bSectorsHigh << 8) | p_->bSectorsLow;
     uint8_t bFlags = ((p_->bType & 0xc0) == 0xc0) ? '*' : (p_->bType & 0x80) ? '-' : (p_->bType & 0x40) ? '+' : ' ';
-    ss << util::fmt("%3d%c %-10s %4u  ", n_ + 1, bFlags, szName, sectors);
+    auto file_num = 1 + n_ - ((n_ > 80) ? 2 : 0);
+    ss << util::fmt("%3d%c %-10s %4u  ", file_num, bFlags, szName, sectors);
 
     auto file_type = p_->bType & 0x3f;
 
@@ -950,8 +951,9 @@ bool DirMgt(Disk& disk)
         }
     }
 
-    auto total_slots = di.dir_tracks * MGT_SECTORS * 2;
-    auto free_slots = total_slots - num_files;
+    auto reserved_sectors = (di.dir_tracks > 4) ? 1 : 0;
+    auto max_slots = (di.dir_tracks * MGT_SECTORS  - reserved_sectors) * 2;
+    auto free_slots = max_slots - num_files;
 
 #if 0 // ToDo: replace legacy variable
     auto total_sectors = disk.uRecordSize ? disk.uRecordSize : (MGT_DISK_SIZE / SECTOR_SIZE);
