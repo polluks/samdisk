@@ -210,6 +210,8 @@ struct option long_options[] =
     { "no-special",       no_argument, &opt.nospecial, 1 },     // undocumented
     { "byte-swap",        no_argument, &opt.byteswap, 1 },
     { "atom",             no_argument, &opt.byteswap, 1 },
+    { "lba",              no_argument, &opt.lba, 1 },
+    { "trinity",          no_argument, &opt.lba, 1 },
     { "ace",              no_argument, nullptr, OPT_ACE },
     { "mx",               no_argument, nullptr, OPT_MX },
     { "agat",             no_argument, nullptr, OPT_AGAT },
@@ -675,11 +677,11 @@ int main(int argc_, char* argv_[])
                 Usage();
 
             if (nSource == argHDD)
-                FormatHdd(opt.szSource);
+                f = FormatHdd(opt.szSource);
             else if (nSource == argBootSector)
-                FormatBoot(opt.szSource);
+                f = FormatBoot(opt.szSource);
             else if (nSource == argDisk)
-                FormatImage(opt.szSource, opt.range);
+                f = FormatImage(opt.szSource, opt.range);
             else
                 Usage();
 
